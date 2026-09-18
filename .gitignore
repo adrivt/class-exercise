@@ -18,3 +18,6 @@ venv/
 .vscode/
 .idea/
 .env
+
+
+#the reason its wriiten like this: * is like a wildcard, and .csv, or .py is the way the file ends. So it will ignore all files that end with .csv or .py, and the same goes for the other file types.  
