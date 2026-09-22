@@ -17,30 +17,30 @@ logger = logging.getLogger(__name__)
 
 def inspect_csv(filepath):
     """Read a CSV file and display basic information."""
-    # 
     # TODO:
-    df = pd.read_csv("sample.csv")
-    logger.info("Filepath:", filepath)
-    df.head(3)
+    df = pd.read_csv(filepath)
+    logger.info(f"Filepath: {filepath}")
+    print(df.head(3))
     
 
 
 def inspect_json(filepath):
     """Read a JSON file and display basic information."""
     # TODO:
-    with open("sample.json", "r") as f:
+    with open(filepath, "r") as f:
         data = json.load(f)
-    logger.info("Filepath:", filepath)
+    logger.info(f"Filepath: {filepath}")
     print(data)
 
 
 def inspect_yaml(filepath):
     """Read a YAML file and display basic information."""
     # TODO:
-    with open("sample.yaml", "r") as f:
+    with open(filepath, "r") as f:
         config = yaml.safe_load(f)
-    logger.info("Filepath:", filepath)
-    print(config)
+    logger.info(f"Filepath: {filepath}")
+    print(config["cleaning"]["missing"])
+    print(config["processing"]["batch_size"])
     
 
 
