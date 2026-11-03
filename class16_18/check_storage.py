@@ -2,6 +2,7 @@ import logging
 import sqlite3
 from pathlib import Path
 
+
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s %(levelname)-8s %(name)s — %(message)s",
@@ -9,6 +10,54 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+class BookStorage:
+    def __init__(self, db_path="data/books.db"):
+        self.db_path = db_path
+
+    def add_book(self, title, price):
+        connection = sqlite3.connect(self.db_path)
+        try:
+            sql_statement = "INSERT INTO books (title, price) VALUES (?, ?)"
+            cursor = connection.execute(sql_statement, (title, price))
+            book_id = cursor.lastrowid
+            connection.commit()
+            logger.debug(f"Added book: id={book_id}, title={title}")
+            return book_id
+        except sqlite3.Error:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+
+    def get_book(self, book_id):
+        connection = sqlite3.connect(self.db_path)
+        connection.row_factory = sqlite3.Row
+        try:
+            sql_statement = "SELECT id, title, price FROM books WHERE id = ?"
+            row = connection.execute(sql_statement, (book_id,)).fetchone()
+            logger.debug(f"Retrieved book: id={book_id}, found={row is not None}")
+            if row is None:
+                return None
+            return dict(row)
+        finally:
+            connection.close()
+
+    def list_books(self, min_price=0, limit=100):
+        connection = sqlite3.connect(self.db_path)
+        connection.row_factory = sqlite3.Row
+        try:
+            sql_statement = (
+                "SELECT id, title, price FROM books "
+                "WHERE price >= ? "
+                "ORDER BY price DESC, id ASC "
+                "LIMIT ?"
+            )
+            rows = connection.execute(sql_statement, (min_price, limit)).fetchall()
+            logger.debug(f"Listed books: count={len(rows)}")
+            return [dict(row) for row in rows]
+        finally:
+            connection.close()
+            
 def main():
     path = Path("data") / "books.db"
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -89,6 +138,20 @@ def main():
     print(row)  # None
 
     connection.close()
+    
+        # ...
+    # connection.close()
+
+    storage = BookStorage()
+    book_id = storage.add_book("Book A", 12.5)
+    logger.info(f"Added book: id={book_id}")
+    
+    print(storage.get_book(book_id)["title"])
+    print(storage.get_book(book_id)["price"])
+    books = storage.list_books(min_price=15, limit=2)
+    print([(book["title"], book["price"]) for book in books])
+
+
 
 if __name__ == "__main__":
     main()
